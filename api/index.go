@@ -10,7 +10,7 @@ import (
 )
 
 type Update struct {
-	UpdateId string `json:"update_id"`
+	UpdateId int    `json:"update_id"`
 	Message  string `json:"message"`
 }
 
