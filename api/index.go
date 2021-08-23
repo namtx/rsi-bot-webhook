@@ -113,6 +113,8 @@ func getIndicator(message Message) (Indicator, error) {
 		return Indicator{}, err
 	}
 
+	log.Println(resp.Body)
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -120,7 +122,12 @@ func getIndicator(message Message) (Indicator, error) {
 	}
 
 	var indicator Indicator
-	json.Unmarshal(body, &indicator)
+	err = json.Unmarshal(body, &indicator)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	log.Println(indicator)
 
 	return indicator, nil
 }
