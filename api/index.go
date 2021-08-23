@@ -15,6 +15,11 @@ type Message struct {
 	Id              int             `json:"message_id"`
 	Text            string          `json:"text"`
 	MessageEntities []MessageEntity `json:"entities"`
+	Chat            Chat            `json:"chat"`
+}
+
+type Chat struct {
+	Id int64 `json:"id"`
 }
 
 type MessageEntity struct {
@@ -81,7 +86,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := sendMessage(fmt.Sprintf("RSI: %f", indicator.Rsi))
+	result, err := sendMessage(fmt.Sprintf("RSI: %f", indicator.Rsi), update.Message.Chat.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
@@ -165,10 +170,10 @@ func getSupportedIndicators() []string {
 	return []string{"rsi"}
 }
 
-func sendMessage(text string) (SendMessageResult, error) {
+func sendMessage(text string, chatId int64) (SendMessageResult, error) {
 	request, err := http.NewRequest(
 		"GET",
-		fmt.Sprintf("%s/sendMessage?chat_id=%s&text=%s", botURL, chatId, text),
+		fmt.Sprintf("%s/sendMessage?chat_id=%d&text=%s", botURL, chatId, text),
 		nil,
 	)
 	if err != nil {
