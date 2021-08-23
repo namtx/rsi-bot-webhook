@@ -74,7 +74,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if update.Message.MessageEntities[0].Type != "bot_command" {
+	if len(update.Message.MessageEntities) == 0 || update.Message.MessageEntities[0].Type != "bot_command" {
+		return
+	}
+
+	indicatorRequest, err := parseIndicatorRequest(update.Message)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
 		return
 	}
 
@@ -86,7 +93,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := sendMessage(fmt.Sprintf("RSI: %f", indicator.Rsi), update.Message.Chat.Id)
+	result, err := sendMessage(fmt.Sprintf("RSI %s %s %f", strings.ToUpper(indicatorRequest.Symbol), indicatorRequest.Interval, indicator.Rsi), update.Message.Chat.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
@@ -100,9 +107,6 @@ func getIndicator(message Message) (Indicator, error) {
 	indicatorRequest, err := parseIndicatorRequest(message)
 	if err != nil {
 		return Indicator{}, err
-	}
-	if indicatorRequest.Interval == "" {
-		indicatorRequest.Interval = "1d"
 	}
 
 	request, err := http.NewRequest(
@@ -149,11 +153,22 @@ func parseIndicatorRequest(message Message) (IndicatorRequest, error) {
 
 	entities := strings.Split(remaining, " ")
 
+	var indicatorRequest IndicatorRequest
+
 	if len(entities) == 2 {
-		return IndicatorRequest{Type: indicatorType, Symbol: entities[0], Interval: entities[1]}, nil
+		indicatorRequest = IndicatorRequest{Type: indicatorType, Symbol: entities[0], Interval: entities[1]}
 	} else {
-		return IndicatorRequest{Type: indicatorType, Symbol: entities[0]}, nil
+		indicatorRequest = IndicatorRequest{Type: indicatorType, Symbol: entities[0]}
 	}
+	if indicatorRequest.Interval == "" {
+		indicatorRequest.Interval = "1d"
+	}
+
+	if strings.Index(indicatorRequest.Symbol, "/") == -1 {
+		indicatorRequest.Symbol = fmt.Sprintf("%s/%s", indicatorRequest.Symbol, "USDT")
+	}
+
+	return indicatorRequest, nil
 }
 
 func indexOf(slice []string, item string) int {
