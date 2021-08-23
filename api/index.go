@@ -42,7 +42,7 @@ type PinnedMessage struct {
 }
 
 type Indicator struct {
-	Rsi string `json:"rsi"`
+	Rsi float64 `json:"rsi"`
 }
 
 type IndicatorRequest struct {
@@ -81,7 +81,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := sendMessage(indicator.Rsi)
+	result, err := sendMessage(fmt.Sprintf("RSI: %f", indicator.Rsi))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
