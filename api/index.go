@@ -9,9 +9,13 @@ import (
 	"os"
 )
 
+type Message struct {
+	Id   int    `json:"message_id"`
+	Text string `json:"text"`
+}
 type Update struct {
-	UpdateId int    `json:"update_id"`
-	Message  string `json:"message"`
+	UpdateId int     `json:"update_id"`
+	Message  Message `json:"message"`
 }
 
 type SendMessageResponse struct {
@@ -48,7 +52,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(update.UpdateId)
 	log.Println(update.Message)
-	_, err = sendMessage(update.Message)
+	_, err = sendMessage(update.Message.Text)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
