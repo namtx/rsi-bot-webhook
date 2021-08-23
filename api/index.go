@@ -52,12 +52,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(update.UpdateId)
 	log.Println(update.Message)
-	_, err = sendMessage(update.Message.Text)
+	result, err := sendMessage(update.Message.Text)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
 	}
+
+	log.Println(result.MessageId)
 }
 
 func sendMessage(text string) (SendMessageResult, error) {
