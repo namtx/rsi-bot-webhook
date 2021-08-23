@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -39,12 +40,20 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&update)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
 	}
 
-	sendMessage(update.Message)
+	log.Println(update.UpdateId)
+	log.Println(update.Message)
+	_, err = sendMessage(update.Message)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return
+	}
 }
 
 func sendMessage(text string) (SendMessageResult, error) {
