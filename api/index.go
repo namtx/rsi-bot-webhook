@@ -80,6 +80,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	indicatorRequest, err := parseIndicatorRequest(update.Message)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
@@ -88,6 +89,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	indicator, err := getIndicator(update.Message)
 
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
@@ -95,6 +97,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	result, err := sendMessage(fmt.Sprintf("RSI %s %s %f", strings.ToUpper(indicatorRequest.Symbol), indicatorRequest.Interval, indicator.Rsi), update.Message.Chat.Id)
 	if err != nil {
+		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
 		return
@@ -104,6 +107,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIndicator(message Message) (Indicator, error) {
+	log.Println(message.Text)
 	indicatorRequest, err := parseIndicatorRequest(message)
 	if err != nil {
 		return Indicator{}, err
@@ -142,8 +146,10 @@ func getIndicator(message Message) (Indicator, error) {
 }
 
 func parseIndicatorRequest(message Message) (IndicatorRequest, error) {
+	log.Println(message.Text)
 	supportedIndicators := getSupportedIndicators()
 	indicatorType := message.Text[1:message.MessageEntities[0].Length]
+	log.Println(indicatorType)
 
 	if indexOf(supportedIndicators, indicatorType) == -1 {
 		return IndicatorRequest{}, errors.New("Unsupported indicator")
